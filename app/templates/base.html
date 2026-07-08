@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ page_title }} · 本地销售 AI</title>
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="brand">本地销售 AI</a>
+      <nav class="main-nav">
+        <a href="/" class="nav-link{% if active_page == 'qa' %} active{% endif %}">AI 问答</a>
+        <a href="/knowledge" class="nav-link{% if active_page == 'knowledge' %} active{% endif %}">知识库</a>
+        <a href="/materials" class="nav-link{% if active_page == 'materials' %} active{% endif %}">素材</a>
+        <a href="/speech-templates" class="nav-link{% if active_page == 'speech' %} active{% endif %}">话术模板</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <div id="toast" class="toast hidden" role="status"></div>
+  <script src="/static/app.js"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

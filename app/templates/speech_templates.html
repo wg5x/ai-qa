@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="panel">
+  <h1>话术模板</h1>
+  <p class="hint">粘贴成功聊天记录，AI 总结为模板；确认后才可用于问答。</p>
+
+  <form id="chat-summarize-form" class="stack-form">
+    <label for="source-chat">聊天记录</label>
+    <textarea id="source-chat" name="source_chat" rows="8" placeholder="粘贴一段成功谈单聊天记录..." required></textarea>
+    <button type="submit" class="btn primary">AI 总结模板</button>
+  </form>
+</section>
+
+<section id="template-editor" class="panel hidden">
+  <div class="panel-header">
+    <h2>模板详情</h2>
+    <span id="template-status" class="status-badge"></span>
+  </div>
+
+  <form id="template-edit-form" class="stack-form">
+    <input type="hidden" name="template_id" id="template-id">
+    <label>场景<input type="text" name="scenario" id="template-scenario"></label>
+    <label>客户问题<textarea name="customer_question" id="template-question" rows="2"></textarea></label>
+    <label>风格说明<textarea name="style_notes" id="template-style" rows="2"></textarea></label>
+    <label>标准回复<textarea name="standard_reply" id="template-reply" rows="4"></textarea></label>
+    <label>禁用词<input type="text" name="forbidden_words" id="template-forbidden"></label>
+    <label>推荐素材 ID<input type="text" name="recommended_material_ids" id="template-material-ids"></label>
+
+    <div class="button-row">
+      <button type="submit" class="btn secondary">保存修改</button>
+      <button type="button" class="btn primary" id="template-confirm">确认生效</button>
+      <button type="button" class="btn danger" id="template-disable">停用模板</button>
+    </div>
+  </form>
+</section>
+
+<section class="panel">
+  <h2>模板列表</h2>
+  <div id="template-list" class="card-list"></div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  initSpeechTemplatesPage();
+</script>
+{% endblock %}

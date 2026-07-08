@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="panel">
+  <h1>AI 问答</h1>
+  <p class="hint">输入客户问题或业务查询，获取回复思路、标准回复和推荐素材。</p>
+
+  <form id="qa-form" class="stack-form">
+    <label for="question">问题</label>
+    <textarea id="question" name="question" rows="4" placeholder="例如：客户问刹车片有没有噪音，怎么回复？" required></textarea>
+    <button type="submit" class="btn primary" id="qa-submit">提交问题</button>
+  </form>
+</section>
+
+<section id="qa-result" class="panel hidden">
+  <div class="panel-header">
+    <h2>回答结果</h2>
+    <button type="button" class="btn secondary" id="copy-reply">复制标准回复</button>
+  </div>
+
+  <div class="result-block">
+    <h3>回复思路</h3>
+    <p id="reply-thinking" class="result-text"></p>
+  </div>
+
+  <div class="result-block highlight">
+    <h3>标准回复</h3>
+    <pre id="standard-reply" class="result-pre"></pre>
+  </div>
+
+  <div class="result-block">
+    <h3>参考依据</h3>
+    <ul id="references" class="result-list"></ul>
+  </div>
+
+  <div class="result-block">
+    <h3>推荐素材</h3>
+    <ul id="recommended-materials" class="result-list"></ul>
+  </div>
+
+  <div class="result-block">
+    <h3>注意事项</h3>
+    <ul id="warnings" class="result-list warnings"></ul>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  initQAPage();
+</script>
+{% endblock %}

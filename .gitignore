@@ -1,0 +1,15 @@
+.DS_Store
+Thumbs.db
+thumbs.db
+
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+.env
+.venv/
+venv/
+
+data/*.sqlite3
+
+*.mp4

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="panel">
+  <h1>知识库管理</h1>
+  <p class="hint">上传固定模板的报价单和合同 Excel，导入本地知识库。</p>
+
+  <div class="upload-grid">
+    <form id="quote-import-form" class="upload-card">
+      <h2>导入报价单</h2>
+      <input type="file" name="file" accept=".xlsx,.xls" required>
+      <button type="submit" class="btn primary">上传报价单</button>
+    </form>
+
+    <form id="contract-import-form" class="upload-card">
+      <h2>导入合同</h2>
+      <input type="file" name="file" accept=".xlsx,.xls" required>
+      <button type="submit" class="btn primary">上传合同</button>
+    </form>
+  </div>
+</section>
+
+<section id="import-result" class="panel hidden">
+  <h2>导入结果</h2>
+  <pre id="import-result-body" class="result-pre"></pre>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  initKnowledgePage();
+</script>
+{% endblock %}

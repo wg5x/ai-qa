@@ -1,0 +1,23 @@
+[project]
+name = "local-sales-ai"
+version = "0.1.0"
+description = "Local FastAPI MVP for sales AI knowledge workflows."
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "sqlalchemy",
+    "openpyxl",
+    "python-multipart",
+    "jinja2",
+    "pytest",
+    "httpx",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
