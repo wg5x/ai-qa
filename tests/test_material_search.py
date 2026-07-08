@@ -130,11 +130,13 @@ def test_material_crud_routes_return_local_file_path_without_reading_file(client
 
     list_response = client.get("/api/materials")
     assert list_response.status_code == 200
-    assert [material["id"] for material in list_response.json()] == [created["id"]]
+    assert [material["id"] for material in list_response.json()["items"]] == [created["id"]]
 
     search_response = client.get("/api/materials/search", params={"q": "HIQ 包装"})
     assert search_response.status_code == 200
-    assert [material["id"] for material in search_response.json()] == [created["id"]]
+    assert [material["id"] for material in search_response.json()["items"]] == [
+        created["id"]
+    ]
 
     update_response = client.patch(
         f"/api/materials/{created['id']}",
@@ -151,3 +153,31 @@ def test_material_crud_routes_return_local_file_path_without_reading_file(client
         assert list_materials(db) == []
         assert delete_material(db, created["id"]) is False
         assert update_material(db, created["id"], {"description": "missing"}) is None
+
+
+def test_materials_endpoint_returns_paginated_results(client):
+    for index in range(25):
+        response = client.post(
+            "/api/materials",
+            json={
+                "name": f"素材 {index:02d}",
+                "file_path": f"/materials/{index:02d}.jpg",
+                "material_type": "image",
+            },
+        )
+        assert response.status_code == 200
+
+    first_page = client.get("/api/materials", params={"page": 1, "page_size": 20})
+    second_page = client.get("/api/materials", params={"page": 2, "page_size": 20})
+    default_page = client.get("/api/materials")
+
+    assert first_page.status_code == 200
+    assert first_page.json()["total"] == 25
+    assert first_page.json()["page"] == 1
+    assert first_page.json()["page_size"] == 20
+    assert first_page.json()["pages"] == 2
+    assert len(first_page.json()["items"]) == 20
+    assert len(second_page.json()["items"]) == 5
+    assert default_page.json()["page_size"] == 10
+    assert default_page.json()["pages"] == 3
+    assert len(default_page.json()["items"]) == 10

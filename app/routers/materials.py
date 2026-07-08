@@ -9,6 +9,7 @@ from app.services.material_search import (
     create_material,
     delete_material,
     list_materials,
+    paginate_materials,
     search_materials,
     update_material,
 )
@@ -39,8 +40,12 @@ def create_material_endpoint(
 
 
 @router.get("")
-def list_materials_endpoint(db: Session = Depends(get_db)) -> list[dict[str, Any]]:
-    return list_materials(db)
+def list_materials_endpoint(
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=10, ge=1, le=100),
+    db: Session = Depends(get_db),
+) -> dict[str, Any]:
+    return paginate_materials(list_materials(db), page=page, page_size=page_size)
 
 
 @router.get("/search")
@@ -50,15 +55,21 @@ def search_materials_endpoint(
     tags: str | None = Query(default=None),
     brand: str | None = Query(default=None),
     material_grade: str | None = Query(default=None),
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=10, ge=1, le=100),
     db: Session = Depends(get_db),
-) -> list[dict[str, Any]]:
-    return search_materials(
-        db,
-        query=q,
-        scenario=scenario,
-        tags=tags,
-        brand=brand,
-        material_grade=material_grade,
+) -> dict[str, Any]:
+    return paginate_materials(
+        search_materials(
+            db,
+            query=q,
+            scenario=scenario,
+            tags=tags,
+            brand=brand,
+            material_grade=material_grade,
+        ),
+        page=page,
+        page_size=page_size,
     )
 
 

@@ -67,6 +67,47 @@ def test_page_routes_return_html(client):
         assert "/static/app.js" in response.text
 
 
+def test_page_shell_uses_left_sidebar_navigation(client):
+    response = client.get("/")
+
+    assert response.status_code == 200
+    assert 'class="app-shell"' in response.text
+    assert 'class="sidebar-nav"' in response.text
+    assert 'class="page-content"' in response.text
+    assert 'class="main-nav"' not in response.text
+
+
+def test_materials_page_uses_list_with_create_modal(client):
+    response = client.get("/materials")
+
+    assert response.status_code == 200
+    assert 'id="open-material-modal"' in response.text
+    assert 'id="material-modal"' in response.text
+    assert 'class="modal hidden"' in response.text
+    assert 'id="material-list"' in response.text
+    assert 'id="material-form"' in response.text
+    assert 'id="material-id"' in response.text
+
+
+def test_qa_page_uses_chat_workspace(client):
+    response = client.get("/")
+
+    assert response.status_code == 200
+    assert 'class="qa-workspace"' in response.text
+    assert 'id="chat-thread"' in response.text
+    assert 'id="latest-question"' in response.text
+    assert 'class="chat-composer"' in response.text
+    assert 'id="qa-result"' in response.text
+
+
+def test_static_styles_size_sidebar_and_content_for_desktop(client):
+    response = client.get("/static/app.css")
+
+    assert response.status_code == 200
+    assert "--sidebar-width: 260px;" in response.text
+    assert "max-width: 1440px;" in response.text
+
+
 def test_qa_ask_returns_structured_chinese_answer_without_sensitive_terms(client):
     response = client.post(
         "/api/qa/ask",

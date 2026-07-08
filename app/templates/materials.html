@@ -2,35 +2,59 @@
 
 {% block content %}
 <section class="panel">
-  <h1>素材管理</h1>
-  <p class="hint">登记本地图片、视频和报告，按场景或标签搜索推荐。</p>
-
-  <form id="material-form" class="stack-form">
-    <div class="form-grid">
-      <label>名称<input type="text" name="name" required></label>
-      <label>文件路径<input type="text" name="file_path" placeholder="/Users/.../video.mp4" required></label>
-      <label>类型<input type="text" name="material_type" placeholder="video / image / report"></label>
-      <label>产品类型<input type="text" name="product_type" placeholder="刹车片"></label>
-      <label>场景<input type="text" name="scenario" placeholder="包装 / 噪音测试"></label>
-      <label>品牌<input type="text" name="brand" placeholder="HIQ"></label>
-      <label>材质<input type="text" name="material_grade" placeholder="A+半金属"></label>
-      <label>标签<input type="text" name="tags" placeholder="包装,HIQ,对比"></label>
+  <div class="panel-header page-toolbar">
+    <div>
+      <h1>素材管理</h1>
+      <p class="hint">按关键词、品牌、场景查看素材；新增素材通过弹窗录入。</p>
     </div>
-    <label>描述<textarea name="description" rows="3"></textarea></label>
-    <label>推荐话术<textarea name="recommended_script" rows="2"></textarea></label>
-    <button type="submit" class="btn primary">新增素材</button>
+    <button type="button" class="btn primary" id="open-material-modal">新增素材</button>
+  </div>
+
+  <form id="material-search-form" class="inline-form material-toolbar">
+    <input type="text" name="q" placeholder="搜索名称、品牌、型号、标签或描述">
+    <button type="submit" class="btn secondary">搜索</button>
+    <button type="button" class="btn ghost" id="material-refresh">全部</button>
   </form>
+
+  <div id="material-list" class="card-list"></div>
+  <div class="pagination" id="material-pagination">
+    <span id="material-page-info">共 0 条</span>
+    <div class="button-row">
+      <button type="button" class="btn ghost" id="material-prev">上一页</button>
+      <button type="button" class="btn ghost" id="material-next">下一页</button>
+    </div>
+  </div>
 </section>
 
-<section class="panel">
-  <h2>搜索素材</h2>
-  <form id="material-search-form" class="inline-form">
-    <input type="text" name="q" placeholder="输入关键词，如 HIQ 包装">
-    <button type="submit" class="btn secondary">搜索</button>
-    <button type="button" class="btn ghost" id="material-refresh">刷新全部</button>
-  </form>
-  <div id="material-list" class="card-list"></div>
-</section>
+<div id="material-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="material-modal-title">
+  <div class="modal-backdrop" data-close-modal></div>
+  <section class="modal-panel">
+    <div class="panel-header">
+      <h2 id="material-modal-title">新增素材</h2>
+      <button type="button" class="btn ghost" id="close-material-modal">关闭</button>
+    </div>
+
+    <form id="material-form" class="stack-form">
+      <input type="hidden" id="material-id" name="id">
+      <div class="form-grid">
+        <label>名称<input type="text" name="name" required></label>
+        <label>文件路径<input type="text" name="file_path" placeholder="/Users/.../video.mp4" required></label>
+        <label>类型<input type="text" name="material_type" placeholder="video / image / report"></label>
+        <label>产品类型<input type="text" name="product_type" placeholder="刹车片"></label>
+        <label>场景<input type="text" name="scenario" placeholder="包装 / 噪音测试"></label>
+        <label>品牌<input type="text" name="brand" placeholder="HIQ"></label>
+        <label>材质<input type="text" name="material_grade" placeholder="A+半金属"></label>
+        <label>标签<input type="text" name="tags" placeholder="包装,HIQ,对比"></label>
+      </div>
+      <label>描述<textarea name="description" rows="3"></textarea></label>
+      <label>推荐话术<textarea name="recommended_script" rows="2"></textarea></label>
+      <div class="button-row">
+        <button type="submit" class="btn primary">保存素材</button>
+        <button type="button" class="btn ghost" data-close-modal>取消</button>
+      </div>
+    </form>
+  </section>
+</div>
 {% endblock %}
 
 {% block scripts %}

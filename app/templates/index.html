@@ -1,47 +1,38 @@
 {% extends "base.html" %}
 
 {% block content %}
-<section class="panel">
-  <h1>AI 问答</h1>
-  <p class="hint">输入客户问题或业务查询，获取回复思路、标准回复和推荐素材。</p>
-
-  <form id="qa-form" class="stack-form">
-    <label for="question">问题</label>
-    <textarea id="question" name="question" rows="4" placeholder="例如：客户问刹车片有没有噪音，怎么回复？" required></textarea>
-    <button type="submit" class="btn primary" id="qa-submit">提交问题</button>
-  </form>
-</section>
-
-<section id="qa-result" class="panel hidden">
-  <div class="panel-header">
-    <h2>回答结果</h2>
-    <button type="button" class="btn secondary" id="copy-reply">复制标准回复</button>
+<section class="qa-workspace">
+  <div class="qa-header">
+    <div>
+      <h1>AI 问答</h1>
+      <p class="hint">像客服对话一样提问，系统会结合知识库、历史报价和素材生成可直接发送给客户的回复。</p>
+    </div>
   </div>
 
-  <div class="result-block">
-    <h3>回复思路</h3>
+  <div id="chat-thread" class="chat-thread" aria-live="polite">
+    <article class="chat-message assistant">
+      <div class="message-avatar">AI</div>
+      <div class="message-bubble">
+        <strong>销售助手</strong>
+        <p>可以问客户回复、历史报价、订单差异或素材推荐。回答会优先使用本地知识库和已登记素材。</p>
+      </div>
+    </article>
+  </div>
+
+  <section id="qa-result" class="hidden" aria-label="最新回答">
+    <span id="latest-question"></span>
     <p id="reply-thinking" class="result-text"></p>
-  </div>
-
-  <div class="result-block highlight">
-    <h3>标准回复</h3>
     <pre id="standard-reply" class="result-pre"></pre>
-  </div>
-
-  <div class="result-block">
-    <h3>参考依据</h3>
     <ul id="references" class="result-list"></ul>
-  </div>
-
-  <div class="result-block">
-    <h3>推荐素材</h3>
     <ul id="recommended-materials" class="result-list"></ul>
-  </div>
-
-  <div class="result-block">
-    <h3>注意事项</h3>
     <ul id="warnings" class="result-list warnings"></ul>
-  </div>
+    <button type="button" class="btn secondary" id="copy-reply">复制标准回复</button>
+  </section>
+
+  <form id="qa-form" class="chat-composer">
+    <textarea id="question" name="question" rows="2" placeholder="输入客户问题，例如：客户问刹车片有没有噪音，怎么回复？" required></textarea>
+    <button type="submit" class="btn primary" id="qa-submit">发送</button>
+  </form>
 </section>
 {% endblock %}
 

@@ -30,6 +30,26 @@ def list_materials(db: Session) -> list[dict[str, Any]]:
     return [_serialize_material(material) for material in materials]
 
 
+def paginate_materials(
+    materials: list[dict[str, Any]],
+    *,
+    page: int,
+    page_size: int,
+) -> dict[str, Any]:
+    total = len(materials)
+    pages = max((total + page_size - 1) // page_size, 1)
+    safe_page = min(max(page, 1), pages)
+    start = (safe_page - 1) * page_size
+    end = start + page_size
+    return {
+        "items": materials[start:end],
+        "total": total,
+        "page": safe_page,
+        "page_size": page_size,
+        "pages": pages,
+    }
+
+
 def search_materials(
     db: Session,
     query: str | None = None,
