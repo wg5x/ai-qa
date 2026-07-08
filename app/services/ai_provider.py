@@ -90,7 +90,7 @@ class OpenAICompatibleProvider:
         for attempt in range(3):
             try:
                 return self.transport(
-                    f"{self.base_url}/v1/chat/completions",
+                    _chat_completions_url(self.base_url),
                     self.api_key,
                     payload,
                     self.timeout,
@@ -127,6 +127,12 @@ def _default_provider() -> SalesAIProvider:
             model=os.getenv("OPENAI_MODEL", "gpt-5.5").strip(),
         )
     raise RuntimeError(f"Unsupported SALES_AI_PROVIDER: {provider_name}")
+
+
+def _chat_completions_url(base_url: str) -> str:
+    if base_url.endswith("/v1"):
+        return f"{base_url}/chat/completions"
+    return f"{base_url}/v1/chat/completions"
 
 
 def _default_reply(question: str, references: list[dict[str, object]]) -> str:

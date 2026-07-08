@@ -413,6 +413,25 @@ def test_openai_compatible_provider_posts_chat_completion_and_parses_json():
     assert answer.warnings == ["check price validity"]
 
 
+def test_openai_compatible_provider_accepts_v1_base_url():
+    requests = []
+
+    def fake_transport(url, api_key, payload, timeout):
+        requests.append(url)
+        return {"choices": [{"message": {"content": '{"standard_reply":"ok"}'}}]}
+
+    provider = OpenAICompatibleProvider(
+        api_key="test-key",
+        base_url="https://token-gpt.top/v1",
+        model="gpt-5.5",
+        transport=fake_transport,
+    )
+
+    provider.generate("客户问价格怎么回复？", {"rendered_prompt": "prompt"})
+
+    assert requests == ["https://token-gpt.top/v1/chat/completions"]
+
+
 def test_openai_compatible_provider_accepts_plain_text_reply():
     provider = OpenAICompatibleProvider(
         api_key="test-key",
