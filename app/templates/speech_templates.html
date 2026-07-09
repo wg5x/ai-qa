@@ -2,43 +2,72 @@
 
 {% block content %}
 <section class="panel">
-  <h1>话术模板</h1>
-  <p class="hint">粘贴成功聊天记录，AI 总结为模板；确认后才可用于问答。</p>
-
-  <form id="chat-summarize-form" class="stack-form">
-    <label for="source-chat">聊天记录</label>
-    <textarea id="source-chat" name="source_chat" rows="8" placeholder="粘贴一段成功谈单聊天记录..." required></textarea>
-    <button type="submit" class="btn primary">AI 总结模板</button>
-  </form>
-</section>
-
-<section id="template-editor" class="panel hidden">
-  <div class="panel-header">
-    <h2>模板详情</h2>
-    <span id="template-status" class="status-badge"></span>
-  </div>
-
-  <form id="template-edit-form" class="stack-form">
-    <input type="hidden" name="template_id" id="template-id">
-    <label>场景<input type="text" name="scenario" id="template-scenario"></label>
-    <label>客户问题<textarea name="customer_question" id="template-question" rows="2"></textarea></label>
-    <label>风格说明<textarea name="style_notes" id="template-style" rows="2"></textarea></label>
-    <label>标准回复<textarea name="standard_reply" id="template-reply" rows="4"></textarea></label>
-    <label>禁用词<input type="text" name="forbidden_words" id="template-forbidden"></label>
-    <label>推荐素材 ID<input type="text" name="recommended_material_ids" id="template-material-ids"></label>
-
-    <div class="button-row">
-      <button type="submit" class="btn secondary">保存修改</button>
-      <button type="button" class="btn primary" id="template-confirm">确认生效</button>
-      <button type="button" class="btn danger" id="template-disable">停用模板</button>
+  <div class="panel-header page-toolbar">
+    <div>
+      <h1>话术库</h1>
+      <p class="hint">导入对话文本，AI 总结为待确认话术；人工确认后进入可用话术库。</p>
     </div>
-  </form>
+    <button type="button" class="btn primary" id="open-speech-import-modal">导入对话文本</button>
+  </div>
 </section>
 
 <section class="panel">
-  <h2>模板列表</h2>
+  <div class="panel-header page-toolbar">
+    <div>
+      <h2>话术库列表</h2>
+      <p class="hint">导入后的对话会先生成草稿，确认后进入 AI 问答引用范围。</p>
+    </div>
+  </div>
   <div id="template-list" class="card-list"></div>
 </section>
+
+<div id="speech-import-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="speech-import-modal-title">
+  <div class="modal-backdrop" data-close-speech-import-modal></div>
+  <section class="modal-panel">
+    <div class="panel-header">
+      <h2 id="speech-import-modal-title">导入对话文本</h2>
+      <button type="button" class="btn ghost" id="close-speech-import-modal">关闭</button>
+    </div>
+    <form id="chat-summarize-form" class="stack-form">
+      <label for="source-chat">对话文本</label>
+      <textarea id="source-chat" name="source_chat" rows="8" placeholder="粘贴一段成功谈单聊天记录..." required></textarea>
+      <div class="button-row">
+        <button type="submit" class="btn primary">导入对话文本</button>
+        <button type="button" class="btn ghost" data-close-speech-import-modal>取消</button>
+      </div>
+    </form>
+  </section>
+</div>
+
+<div id="template-editor" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="template-editor-title">
+  <div class="modal-backdrop" data-close-template-editor></div>
+  <section class="modal-panel">
+    <div class="panel-header">
+      <div>
+        <h2 id="template-editor-title">话术详情</h2>
+        <span id="template-status" class="status-badge"></span>
+      </div>
+      <button type="button" class="btn ghost" id="close-template-editor">关闭</button>
+    </div>
+
+    <form id="template-edit-form" class="stack-form">
+      <input type="hidden" name="template_id" id="template-id">
+      <label>场景<input type="text" name="scenario" id="template-scenario"></label>
+      <label>客户问题<textarea name="customer_question" id="template-question" rows="2"></textarea></label>
+      <label>风格说明<textarea name="style_notes" id="template-style" rows="2"></textarea></label>
+      <label>标准回复<textarea name="standard_reply" id="template-reply" rows="4"></textarea></label>
+      <label>禁用词<input type="text" name="forbidden_words" id="template-forbidden"></label>
+      <label>推荐素材 ID<input type="text" name="recommended_material_ids" id="template-material-ids"></label>
+
+      <div class="button-row">
+        <button type="submit" class="btn secondary">保存修改</button>
+        <button type="button" class="btn primary" id="template-confirm">确认生效</button>
+        <button type="button" class="btn danger" id="template-disable">停用话术</button>
+        <button type="button" class="btn ghost" data-close-template-editor>取消</button>
+      </div>
+    </form>
+  </section>
+</div>
 {% endblock %}
 
 {% block scripts %}

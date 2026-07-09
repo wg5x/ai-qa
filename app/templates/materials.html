@@ -4,17 +4,20 @@
 <section class="panel">
   <div class="panel-header page-toolbar">
     <div>
-      <h1>素材管理</h1>
-      <p class="hint">按关键词、品牌、场景查看素材；新增素材通过弹窗录入。</p>
+      <h1>素材库</h1>
+      <p class="hint">素材库只管理图片和视频素材，可以手动新增素材。</p>
     </div>
     <button type="button" class="btn primary" id="open-material-modal">新增素材</button>
   </div>
+</section>
 
-  <form id="material-search-form" class="inline-form material-toolbar">
-    <input type="text" name="q" placeholder="搜索名称、品牌、型号、标签或描述">
-    <button type="submit" class="btn secondary">搜索</button>
-    <button type="button" class="btn ghost" id="material-refresh">全部</button>
-  </form>
+<section class="panel">
+  <div class="panel-header page-toolbar">
+    <div>
+      <h2>已入库素材</h2>
+      <p class="hint">已确认素材会进入 AI 问答推荐链路。</p>
+    </div>
+  </div>
 
   <div id="material-list" class="card-list"></div>
   <div class="pagination" id="material-pagination">
@@ -36,10 +39,12 @@
 
     <form id="material-form" class="stack-form">
       <input type="hidden" id="material-id" name="id">
+      <input type="hidden" id="material-review-id" name="review_id">
+      <label class="file-picker">上传文件<input type="file" id="material-file-upload" accept="image/*,video/*"></label>
       <div class="form-grid">
         <label>名称<input type="text" name="name" required></label>
-        <label>文件路径<input type="text" name="file_path" placeholder="/Users/.../video.mp4" required></label>
-        <label>类型<input type="text" name="material_type" placeholder="video / image / report"></label>
+        <label>文件路径<input type="text" id="material-file-path" name="file_path" placeholder="/Users/.../video.mp4" required></label>
+        <label>类型<input type="text" name="material_type" placeholder="video / image"></label>
         <label>产品类型<input type="text" name="product_type" placeholder="刹车片"></label>
         <label>场景<input type="text" name="scenario" placeholder="包装 / 噪音测试"></label>
         <label>品牌<input type="text" name="brand" placeholder="HIQ"></label>
@@ -49,6 +54,7 @@
       <label>描述<textarea name="description" rows="3"></textarea></label>
       <label>推荐话术<textarea name="recommended_script" rows="2"></textarea></label>
       <div class="button-row">
+        <button type="button" class="btn secondary" id="material-auto-tag">自动打标</button>
         <button type="submit" class="btn primary">保存素材</button>
         <button type="button" class="btn ghost" data-close-modal>取消</button>
       </div>

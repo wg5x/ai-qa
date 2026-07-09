@@ -11,7 +11,7 @@ from app.models import Material
 from app.services.material_search import create_material, is_low_confidence_material
 
 DOCX_NS = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
-MEDIA_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".mp4", ".mov", ".avi", ".pdf"}
+MEDIA_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".mp4", ".mov", ".avi"}
 HASH_FILENAME_PATTERN = re.compile(r"^[0-9a-f]{32}$", re.IGNORECASE)
 MATERIAL_GRADE_PATTERN = re.compile(
     r"(A\+\+?半金属|A\+\+?陶瓷|A半金属|普通半金属|AAA|AA|A\+)",
@@ -163,6 +163,15 @@ def search_manual_knowledge(db: Session, query: str) -> list[dict[str, Any]]:
     return results
 
 
+def list_manual_knowledge(db: Session) -> list[dict[str, Any]]:
+    materials = db.scalars(
+        select(Material)
+        .where(Material.material_type == "knowledge")
+        .order_by(Material.id.desc())
+    )
+    return [_serialize_manual_knowledge(material) for material in materials]
+
+
 def _manual_paragraph_exists(db: Session, paragraph: str) -> bool:
     existing = db.scalars(
         select(Material.description).where(Material.material_type == "knowledge")
@@ -198,8 +207,6 @@ def _is_low_confidence_filename(stem: str, material_grade: str | None) -> bool:
 def _detect_material_type(suffix: str) -> str:
     if suffix in {".mp4", ".mov", ".avi"}:
         return "video"
-    if suffix == ".pdf":
-        return "report"
     return "image"
 
 
@@ -207,3 +214,17 @@ def _truncate(value: str, max_length: int) -> str:
     if len(value) <= max_length:
         return value
     return value[: max_length - 1] + "…"
+
+
+def _serialize_manual_knowledge(material: Material) -> dict[str, Any]:
+    return {
+        "id": material.id,
+        "name": material.name,
+        "file_path": material.file_path,
+        "material_type": material.material_type,
+        "product_type": material.product_type,
+        "scenario": material.scenario,
+        "description": material.description,
+        "tags": material.tags,
+        "created_at": material.created_at.isoformat() if material.created_at else None,
+    }

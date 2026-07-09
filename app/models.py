@@ -71,6 +71,33 @@ class Material(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
 
 
+class MaterialReviewItem(Base):
+    __tablename__ = "material_review_items"
+    __table_args__ = (
+        CheckConstraint(
+            "status IN ('pending', 'confirmed', 'rejected')",
+            name="ck_material_review_items_status",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    source_path: Mapped[str | None] = mapped_column(String(500))
+    name: Mapped[str | None] = mapped_column(String(255))
+    file_path: Mapped[str | None] = mapped_column(String(500))
+    material_type: Mapped[str | None] = mapped_column(String(100))
+    product_type: Mapped[str | None] = mapped_column(String(100))
+    scenario: Mapped[str | None] = mapped_column(String(100))
+    brand: Mapped[str | None] = mapped_column(String(100))
+    material_grade: Mapped[str | None] = mapped_column(String(100))
+    description: Mapped[str | None] = mapped_column(Text)
+    recommended_script: Mapped[str | None] = mapped_column(Text)
+    tags: Mapped[str | None] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(String(20), default="pending", nullable=False)
+    material_id: Mapped[int | None] = mapped_column(Integer)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
 class SpeechTemplate(Base):
     __tablename__ = "speech_templates"
     __table_args__ = (

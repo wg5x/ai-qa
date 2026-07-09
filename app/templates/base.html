@@ -4,17 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{ page_title }} · 本地销售 AI</title>
-  <link rel="stylesheet" href="/static/app.css">
+  <link rel="stylesheet" href="{{ base_path }}/static/app.css?v=material-preview-20260709">
 </head>
 <body>
   <div class="app-shell">
     <aside class="sidebar">
-      <a href="/" class="brand">本地销售 AI</a>
+      <a href="{{ base_path }}/" class="brand" data-app-name>本地销售 AI</a>
       <nav class="sidebar-nav" aria-label="主菜单">
-        <a href="/" class="nav-link{% if active_page == 'qa' %} active{% endif %}">AI 问答</a>
-        <a href="/knowledge" class="nav-link{% if active_page == 'knowledge' %} active{% endif %}">知识库</a>
-        <a href="/materials" class="nav-link{% if active_page == 'materials' %} active{% endif %}">素材管理</a>
-        <a href="/speech-templates" class="nav-link{% if active_page == 'speech' %} active{% endif %}">话术模板</a>
+        <a href="{{ base_path }}/" class="nav-link{% if active_page == 'qa' %} active{% endif %}">AI 问答</a>
+        <a href="{{ base_path }}/knowledge" class="nav-link{% if active_page == 'knowledge' %} active{% endif %}">知识库</a>
+        <a href="{{ base_path }}/materials" class="nav-link{% if active_page == 'materials' %} active{% endif %}">素材库</a>
+        <a href="{{ base_path }}/speech-templates" class="nav-link{% if active_page == 'speech' %} active{% endif %}">话术库</a>
       </nav>
     </aside>
 
@@ -24,7 +24,10 @@
   </div>
 
   <div id="toast" class="toast hidden" role="status"></div>
-  <script src="/static/app.js"></script>
+  <script>
+    window.APP_BASE_PATH = "{{ base_path }}";
+  </script>
+  <script src="{{ base_path }}/static/app.js?v=material-preview-20260709"></script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

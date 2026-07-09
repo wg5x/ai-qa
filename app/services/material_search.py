@@ -27,7 +27,11 @@ def create_material(db: Session, data: dict[str, Any]) -> dict[str, Any]:
 
 def list_materials(db: Session) -> list[dict[str, Any]]:
     materials = db.scalars(select(Material).order_by(Material.id.desc()))
-    return [_serialize_material(material) for material in materials]
+    return [
+        _serialize_material(material)
+        for material in materials
+        if material.material_type != "knowledge"
+    ]
 
 
 def paginate_materials(
@@ -58,7 +62,11 @@ def search_materials(
     brand: str | None = None,
     material_grade: str | None = None,
 ) -> list[dict[str, Any]]:
-    materials = list(db.scalars(select(Material).order_by(Material.id.desc())))
+    materials = [
+        material
+        for material in db.scalars(select(Material).order_by(Material.id.desc()))
+        if material.material_type != "knowledge"
+    ]
     filters = {
         "scenario": scenario,
         "tags": tags,

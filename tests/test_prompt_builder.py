@@ -216,6 +216,65 @@ def test_prompt_context_returns_materials_for_explicit_brand_and_scenario(client
     ]
 
 
+def test_prompt_context_adds_agent_plan_for_material_english_reply(client):
+    seed_prompt_builder_data()
+
+    with database.SessionLocal() as db:
+        context = build_sales_prompt_context(
+            db, "客户想看 HIQ 包装视频，顺便用英文回复他。"
+        )
+
+    agent_plan = context["agent_plan"]
+    assert agent_plan["language"] == "en"
+    assert agent_plan["intents"] == ["material_recommendation", "customer_reply"]
+    assert agent_plan["extracted_entities"]["brand"] == "HIQ"
+    assert agent_plan["missing_fields"] == []
+    assert agent_plan["tool_usage"]["materials"] == "matched"
+    assert "素材库" in agent_plan["required_actions"]
+    rendered = render_sales_prompt(context)
+    assert "必须直接生成英文客户回复" in rendered
+    assert "HIQ Packaging Video" in rendered
+
+
+def test_prompt_context_marks_quote_question_as_missing_information(client):
+    seed_prompt_builder_data()
+
+    with database.SessionLocal() as db:
+        context = build_sales_prompt_context(db, "客户要报价，怎么回复？")
+
+    agent_plan = context["agent_plan"]
+    assert agent_plan["intents"] == ["price_lookup", "missing_information", "customer_reply"]
+    assert "型号/OE号" in agent_plan["missing_fields"]
+    assert "数量" in agent_plan["missing_fields"]
+    assert "包装要求" in agent_plan["missing_fields"]
+    assert "目的港/国家" in agent_plan["missing_fields"]
+    assert "贸易条款" in agent_plan["missing_fields"]
+    rendered = render_sales_prompt(context)
+    assert "不要生成随机价格" in rendered
+    assert "先追问业务员或客户补充信息" in rendered
+
+
+def test_prompt_context_uses_previous_question_for_translation_follow_up(client):
+    seed_prompt_builder_data()
+
+    with database.SessionLocal() as db:
+        context = build_sales_prompt_context(
+            db,
+            "那英文怎么说？",
+            conversation_history=[
+                {"role": "user", "content": "客户问刹车片有没有噪音，怎么回复？"},
+                {"role": "assistant", "content": "可以说明正常安装后噪音控制稳定。"},
+            ],
+        )
+
+    agent_plan = context["agent_plan"]
+    assert agent_plan["language"] == "en"
+    assert agent_plan["is_follow_up"] is True
+    assert agent_plan["effective_question"] == "客户问刹车片有没有噪音，怎么回复？ 那英文怎么说？"
+    assert "customer_reply" in agent_plan["intents"]
+    assert "多轮上下文" in render_sales_prompt(context)
+
+
 def test_prompt_context_does_not_match_material_from_generic_brand_token(client):
     seed_prompt_builder_data()
 
@@ -411,6 +470,30 @@ def test_openai_compatible_provider_posts_chat_completion_and_parses_json():
     assert answer.references == [{"source": "quote"}]
     assert answer.recommended_materials == [{"name": "HIQ video"}]
     assert answer.warnings == ["check price validity"]
+
+
+def test_openai_compatible_provider_sends_runtime_model_parameters():
+    requests = []
+
+    def fake_transport(url, api_key, payload, timeout):
+        requests.append(payload)
+        return {"choices": [{"message": {"content": '{"standard_reply":"ok"}'}}]}
+
+    provider = OpenAICompatibleProvider(
+        api_key="test-key",
+        base_url="https://token-gpt.top/v1",
+        model="gpt-5.5",
+        parameters={"temperature": 0.2, "maxTokens": 2048, "top_p": 0.9},
+        transport=fake_transport,
+    )
+
+    provider.generate("客户问价格怎么回复？", {"rendered_prompt": "prompt"})
+
+    request_payload = requests[0]
+    assert request_payload["temperature"] == 0.2
+    assert request_payload["max_tokens"] == 2048
+    assert request_payload["top_p"] == 0.9
+    assert "maxTokens" not in request_payload
 
 
 def test_openai_compatible_provider_accepts_v1_base_url():

@@ -2,21 +2,30 @@
 
 {% block content %}
 <section class="panel">
-  <h1>知识库管理</h1>
-  <p class="hint">上传固定模板的报价单和合同 Excel，导入本地知识库。</p>
+  <div class="panel-header page-toolbar">
+    <div>
+      <h1>知识库管理</h1>
+      <p class="hint">导入文本类资料，后台解析后自动生成知识库记录。</p>
+    </div>
+    <button type="button" class="btn primary" id="open-knowledge-modal">新增知识</button>
+  </div>
+</section>
 
-  <div class="upload-grid">
-    <form id="quote-import-form" class="upload-card">
-      <h2>导入报价单</h2>
-      <input type="file" name="file" accept=".xlsx,.xls" required>
-      <button type="submit" class="btn primary">上传报价单</button>
-    </form>
+<section class="panel">
+  <div class="panel-header page-toolbar">
+    <div>
+      <h2>知识库列表</h2>
+      <p class="hint">报价单、合同和谈单手册解析后的文本知识会统一展示。</p>
+    </div>
+  </div>
 
-    <form id="contract-import-form" class="upload-card">
-      <h2>导入合同</h2>
-      <input type="file" name="file" accept=".xlsx,.xls" required>
-      <button type="submit" class="btn primary">上传合同</button>
-    </form>
+  <div id="knowledge-list" class="card-list"></div>
+  <div class="pagination" id="knowledge-pagination">
+    <span id="knowledge-page-info">共 0 条</span>
+    <div class="button-row">
+      <button type="button" class="btn ghost" id="knowledge-prev">上一页</button>
+      <button type="button" class="btn ghost" id="knowledge-next">下一页</button>
+    </div>
   </div>
 </section>
 
@@ -24,6 +33,46 @@
   <h2>导入结果</h2>
   <pre id="import-result-body" class="result-pre"></pre>
 </section>
+
+<div id="knowledge-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="knowledge-modal-title">
+  <div class="modal-backdrop" data-close-knowledge-modal></div>
+  <section class="modal-panel">
+    <div class="panel-header">
+      <h2 id="knowledge-modal-title">新增知识</h2>
+      <button type="button" class="btn ghost" id="close-knowledge-modal">关闭</button>
+    </div>
+    <p class="hint">选择文本类资料，后台解析后自动生成知识库记录。</p>
+    <form id="knowledge-import-form" class="stack-form">
+      <label class="file-picker">上传文件<input type="file" id="knowledge-file-upload" name="file" accept=".xlsx,.docx" required></label>
+      <p class="hint">支持报价单 Excel、合同 Excel、谈单手册 DOCX，系统会自动识别类型。</p>
+      <div class="button-row">
+        <button type="submit" class="btn primary" id="create-knowledge-data">导入并解析</button>
+        <button type="button" class="btn ghost" data-close-knowledge-modal>取消</button>
+      </div>
+    </form>
+  </section>
+</div>
+
+<div id="knowledge-edit-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="knowledge-edit-modal-title">
+  <div class="modal-backdrop" data-close-knowledge-edit-modal></div>
+  <section class="modal-panel">
+    <div class="panel-header">
+      <h2 id="knowledge-edit-modal-title">编辑知识片段</h2>
+      <button type="button" class="btn ghost" id="close-knowledge-edit-modal">关闭</button>
+    </div>
+    <form id="knowledge-edit-form" class="stack-form">
+      <input type="hidden" id="knowledge-edit-id" name="id">
+      <input type="hidden" id="knowledge-edit-source-type" name="source_type">
+      <label>标题<input type="text" id="knowledge-edit-title" name="title" required></label>
+      <label>内容<textarea id="knowledge-edit-description" name="description" rows="6" required></textarea></label>
+      <label>标签<input type="text" id="knowledge-edit-tags" name="tags" placeholder="谈单,客户异议"></label>
+      <div class="button-row">
+        <button type="submit" class="btn primary">保存知识片段</button>
+        <button type="button" class="btn ghost" data-close-knowledge-edit-modal>取消</button>
+      </div>
+    </form>
+  </section>
+</div>
 {% endblock %}
 
 {% block scripts %}

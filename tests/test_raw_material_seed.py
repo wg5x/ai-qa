@@ -104,6 +104,20 @@ def test_import_media_directory_registers_files_and_counts_low_confidence(client
     assert [material["name"] for material in materials] == ["A+半金属"]
 
 
+def test_import_media_directory_ignores_pdf_files(client, tmp_path):
+    media_dir = tmp_path / "media"
+    media_dir.mkdir()
+    (media_dir / "catalog.pdf").write_bytes(b"%PDF-1.4")
+    (media_dir / "factory.jpg").write_bytes(b"image")
+
+    with database.SessionLocal() as db:
+        result = import_media_directory(db, media_dir)
+        materials = search_materials(db)
+
+    assert result["created"] == 1
+    assert [material["name"] for material in materials] == ["factory"]
+
+
 def test_low_confidence_materials_are_not_prioritized_in_prompt_context(client):
     with database.SessionLocal() as db:
         create_material(

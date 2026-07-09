@@ -27,10 +27,10 @@ class FakeAIProvider:
         self.standard_reply = standard_reply
 
     def generate(self, question: str, context: dict[str, object]) -> SalesAnswer:
-        price_context = context.get("price_history", {})
-        references = _collect_references(price_context)
+        references = _collect_references(context)
         materials = list(context.get("materials", []))
-        reply = self.standard_reply or _default_reply(question, references)
+        agent_plan = context.get("agent_plan", {})
+        reply = self.standard_reply or _default_reply(question, references, materials, agent_plan)
         return SalesAnswer(
             reply_thinking="已基于相关历史记录、素材和已确认话术生成回复。",
             standard_reply=reply,
@@ -47,6 +47,7 @@ class OpenAICompatibleProvider:
         base_url: str,
         model: str,
         *,
+        parameters: dict[str, object] | None = None,
         timeout: int = 60,
         transport: Callable[
             [str, str, dict[str, object], int], dict[str, object]
@@ -56,6 +57,7 @@ class OpenAICompatibleProvider:
         self.api_key = api_key
         self.base_url = base_url.rstrip("/")
         self.model = model
+        self.parameters = _normalize_generation_parameters(parameters or {})
         self.timeout = timeout
         self.transport = transport or _curl_chat_completion
 
@@ -81,6 +83,7 @@ class OpenAICompatibleProvider:
                 },
             ],
         }
+        payload.update(self.parameters)
         response_payload = self._post_chat_completion(payload)
         content = _extract_chat_content(response_payload)
         return _parse_sales_answer_json(content)
@@ -135,21 +138,88 @@ def _chat_completions_url(base_url: str) -> str:
     return f"{base_url}/v1/chat/completions"
 
 
-def _default_reply(question: str, references: list[dict[str, object]]) -> str:
+def _normalize_generation_parameters(parameters: dict[str, object]) -> dict[str, object]:
+    normalized: dict[str, object] = {}
+    for key, value in parameters.items():
+        if value is None:
+            continue
+        normalized_key = "max_tokens" if key == "maxTokens" else key
+        normalized[normalized_key] = value
+    return normalized
+
+
+def _default_reply(
+    question: str,
+    references: list[dict[str, object]],
+    materials: list[object],
+    agent_plan: object,
+) -> str:
+    if isinstance(agent_plan, dict):
+        intents = agent_plan.get("intents", [])
+        if isinstance(intents, list) and "missing_information" in intents:
+            missing_fields = [
+                str(field)
+                for field in agent_plan.get("missing_fields", [])
+                if field is not None
+            ]
+            fields_text = "、".join(missing_fields) or "型号/OE号、数量、包装要求、目的港/国家、贸易条款"
+            return (
+                "为了给客户准确报价，请先确认"
+                f"{fields_text}。可以回复客户：Please send the part number/OE number, "
+                "quantity, packing requirement, destination country or port, and trade terms, "
+                "then we will check and offer the accurate price."
+            )
+        if (
+            isinstance(intents, list)
+            and "material_recommendation" in intents
+            and materials
+        ):
+            first_material = materials[0] if isinstance(materials[0], dict) else {}
+            brand = first_material.get("brand") or first_material.get("name") or "the requested"
+            material_type = "视频" if first_material.get("material_type") == "video" else "图片"
+            if agent_plan.get("language") != "en":
+                return (
+                    f"已匹配到 {brand} 的相关{material_type}素材。可以回复客户："
+                    f"我把 {brand} 的{material_type}素材发给您参考，里面可以看到包装/产品细节。"
+                    "如果您有具体型号或包装要求，也可以发给我，我再帮您匹配对应资料。"
+                )
+            return (
+                f"Sure, I will send you the {brand} packaging material for your reference. "
+                "You can check the packing style, product appearance, and details in the video. "
+                "If you have a specific part number, please send it to me and I will match the exact material."
+            )
+    if isinstance(agent_plan, dict):
+        intents = agent_plan.get("intents", [])
+        if isinstance(intents, list) and "order_compare" in intents:
+            return "已对比该客户历史订单。相同型号可参考历史配置；新增型号或配置变化需要重新核价后再回复客户。"
     if references:
         return "已参考历史报价和成交记录，可以向客户提供正式报价并推荐相关素材。"
     return "暂未找到匹配的历史记录，建议先确认客户、型号和需求细节。"
 
 
-def _collect_references(price_context: object) -> list[dict[str, object]]:
-    if not isinstance(price_context, dict):
+def _collect_references(context: object) -> list[dict[str, object]]:
+    if not isinstance(context, dict):
         return []
 
     references: list[dict[str, object]] = []
+    price_context = context.get("price_history", {})
     for key in ("quotes", "contracts"):
-        records = price_context.get(key, [])
+        records = price_context.get(key, []) if isinstance(price_context, dict) else []
         if isinstance(records, list):
             references.extend(record for record in records if isinstance(record, dict))
+    order_comparison = context.get("order_comparison", {})
+    order_items = order_comparison.get("items", []) if isinstance(order_comparison, dict) else []
+    if isinstance(order_items, list):
+        references.extend(
+            {
+                "source": "order_compare",
+                "part_number": item.get("part_number"),
+                "status": item.get("status"),
+                "needs_requote": item.get("needs_requote"),
+            }
+            for item in order_items
+            if isinstance(item, dict)
+        )
     return references
 
 

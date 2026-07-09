@@ -181,3 +181,38 @@ def test_materials_endpoint_returns_paginated_results(client):
     assert default_page.json()["page_size"] == 10
     assert default_page.json()["pages"] == 3
     assert len(default_page.json()["items"]) == 10
+
+
+def test_materials_list_and_search_exclude_knowledge_fragments(client):
+    with database.SessionLocal() as db:
+        create_material(
+            db,
+            {
+                "name": "客户关心噪音时的话术",
+                "file_path": "/manual.docx",
+                "material_type": "knowledge",
+                "product_type": "brake_pad",
+                "scenario": "谈单知识",
+                "description": "客户关心噪音时，先说明产品经过装车测试。",
+                "tags": "manual,谈单手册,knowledge_fragment",
+            },
+        )
+        image = create_material(
+            db,
+            {
+                "name": "HIQ 包装图",
+                "file_path": "/materials/hiq.jpg",
+                "material_type": "image",
+                "product_type": "brake_pad",
+                "scenario": "包装展示",
+                "brand": "HIQ",
+                "description": "HIQ 包装图。",
+                "tags": "包装,HIQ",
+            },
+        )
+
+        listed = list_materials(db)
+        searched = search_materials(db, query="谈单手册")
+
+    assert [material["id"] for material in listed] == [image["id"]]
+    assert searched == []
