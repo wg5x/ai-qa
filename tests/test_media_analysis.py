@@ -4,7 +4,7 @@ import subprocess
 import pytest
 
 from app.services.material_review import analyze_material_file
-from app.services.media_analysis import MediaAnalysis, extract_video_frames
+from app.services.media_analysis import MediaAnalysis, analyze_media, extract_video_frames
 
 
 def _create_test_image(path: Path) -> None:
@@ -111,3 +111,38 @@ def test_extract_video_frames_defaults_to_cache_directory(tmp_path):
 
     assert frame_paths
     assert all(source_dir not in path.parents for path in frame_paths)
+
+
+def test_video_analysis_defaults_to_gemini_pro_model(tmp_path, monkeypatch):
+    monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+    frame_path = tmp_path / "frame.jpg"
+    frame_path.write_bytes(b"fake image bytes")
+    video_path = tmp_path / "demo.mp4"
+    video_path.write_bytes(b"fake video bytes")
+    monkeypatch.setattr(
+        "app.services.media_analysis.extract_video_frames",
+        lambda file_path: [frame_path],
+    )
+    requests = []
+
+    def fake_transport(url, api_key, payload, timeout):
+        requests.append(payload)
+        return {
+            "choices": [
+                {
+                    "message": {
+                        "content": (
+                            '{"visual_summary":"包装视频",'
+                            '"ocr_text":"",'
+                            '"tags":["包装"],'
+                            '"confidence":"high"}'
+                        )
+                    }
+                }
+            ]
+        }
+
+    analysis = analyze_media(video_path, material_type="video", chat_transport=fake_transport)
+
+    assert analysis.visual_summary == "包装视频"
+    assert requests[0]["model"] == "gemini-3.1-pro"

@@ -28,6 +28,7 @@ ChatTransport = Callable[[str, str, dict[str, object], int], dict[str, object]]
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp"}
 VIDEO_EXTENSIONS = {".mp4", ".mov", ".avi"}
 SIDECAR_SUFFIXES = (".txt", ".srt", ".vtt")
+DEFAULT_VIDEO_MODEL = "gemini-3.1-pro"
 
 
 def analyze_media(
@@ -46,6 +47,7 @@ def analyze_media(
 
     visual = _call_visual_model(
         visual_inputs,
+        material_type=material_type,
         transcript_text=transcript_text,
         distribution_id=distribution_id,
         chat_transport=chat_transport,
@@ -104,6 +106,7 @@ def read_sidecar_text(file_path: Path) -> str:
 def _call_visual_model(
     image_paths: list[Path],
     *,
+    material_type: str,
     transcript_text: str,
     distribution_id: str | None,
     chat_transport: ChatTransport | None,
@@ -111,7 +114,7 @@ def _call_visual_model(
     if not image_paths:
         return MediaAnalysis(transcript_text=transcript_text, warnings=["未能提取可分析画面"])
     try:
-        model_config = _model_config(distribution_id)
+        model_config = _model_config(distribution_id, material_type=material_type)
         payload = _visual_payload(model_config["model"], image_paths, transcript_text)
         transport = chat_transport or _curl_chat_completion
         response = transport(
@@ -131,7 +134,7 @@ def _call_visual_model(
         )
 
 
-def _model_config(distribution_id: str | None) -> dict[str, str]:
+def _model_config(distribution_id: str | None, *, material_type: str) -> dict[str, str]:
     if distribution_id:
         config = fetch_runtime_distribution_config(distribution_id)
         model = config.get("model") if isinstance(config.get("model"), dict) else {}
@@ -150,8 +153,14 @@ def _model_config(distribution_id: str | None) -> dict[str, str]:
     return {
         "api_key": api_key,
         "base_url": os.getenv("OPENAI_BASE_URL", "https://api.openai.com").strip(),
-        "model": os.getenv("OPENAI_VISION_MODEL", os.getenv("OPENAI_MODEL", "gpt-5.5")).strip(),
+        "model": _default_media_model(material_type),
     }
+
+
+def _default_media_model(material_type: str) -> str:
+    if material_type == "video":
+        return os.getenv("OPENAI_VIDEO_MODEL", DEFAULT_VIDEO_MODEL).strip()
+    return os.getenv("OPENAI_VISION_MODEL", os.getenv("OPENAI_MODEL", "gpt-5.5")).strip()
 
 
 def _visual_payload(model: str, image_paths: list[Path], transcript_text: str) -> dict[str, object]:
