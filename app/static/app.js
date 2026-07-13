@@ -1,9 +1,48 @@
 const APP_BASE_PATH = window.APP_BASE_PATH || "";
 const qaConversationHistory = [];
-const currentDistributionId =
-  new URLSearchParams(window.location.search).get("id") ||
-  new URLSearchParams(window.location.search).get("distributionId") ||
-  "";
+const DISTRIBUTION_ID_STORAGE_KEY = "ai-qa-distribution-id";
+
+function distributionIdFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get("id") || params.get("distributionId") || "";
+}
+
+function storedDistributionId() {
+  try {
+    return sessionStorage.getItem(DISTRIBUTION_ID_STORAGE_KEY) || "";
+  } catch {
+    return "";
+  }
+}
+
+function persistDistributionId(distributionId) {
+  if (!distributionId) return;
+  try {
+    sessionStorage.setItem(DISTRIBUTION_ID_STORAGE_KEY, distributionId);
+  } catch {
+    // Storage can be unavailable in private or restricted browser contexts.
+  }
+}
+
+const currentDistributionId = distributionIdFromUrl() || storedDistributionId();
+persistDistributionId(currentDistributionId);
+
+function syncDistributionNavigationLinks() {
+  if (!currentDistributionId) return;
+
+  document.querySelectorAll("a[href]").forEach((link) => {
+    const rawHref = link.getAttribute("href");
+    if (!rawHref || rawHref.startsWith("#")) return;
+
+    const url = new URL(rawHref, window.location.origin);
+    if (url.origin !== window.location.origin) return;
+    if (APP_BASE_PATH && !url.pathname.startsWith(`${APP_BASE_PATH}/`) && url.pathname !== APP_BASE_PATH) return;
+    url.searchParams.set("id", currentDistributionId);
+    link.href = `${url.pathname}${url.search}${url.hash}`;
+  });
+}
+
+syncDistributionNavigationLinks();
 
 function appUrl(path) {
   if (

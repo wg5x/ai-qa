@@ -643,6 +643,17 @@ def test_qa_frontend_sends_conversation_history(client):
     assert 'path.startsWith("/dist/")' in response.text
 
 
+def test_qa_frontend_persists_distribution_id_across_pages(client):
+    response = client.get("/static/app.js")
+
+    assert response.status_code == 200
+    assert "DISTRIBUTION_ID_STORAGE_KEY" in response.text
+    assert "sessionStorage.setItem" in response.text
+    assert "sessionStorage.getItem" in response.text
+    assert "syncDistributionNavigationLinks" in response.text
+    assert 'url.searchParams.set("id", currentDistributionId)' in response.text
+
+
 def test_qa_frontend_renders_recommended_image_and_video_cards(client):
     response = client.get("/static/app.js")
 
